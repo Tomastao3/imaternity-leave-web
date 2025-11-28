@@ -1,0 +1,7 @@
+@startsalt "产假津贴计算 - 默认"
+{
+    !include __fragment/产假津贴计算-页头.puml
+    !include __fragment/欢迎语.puml
+    !include __fragment/基本信息表单.puml
+}
+@endsalt

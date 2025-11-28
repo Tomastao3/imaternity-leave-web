@@ -1,0 +1,99 @@
+@startuml er
+title ERP - Derived ER diagram from sql/t_initial_setup.sql
+
+' Tables
+entity t_maternity_rules {
+  * id : SERIAL <<PK>>
+  --
+  city : VARCHAR(50) <<NOT NULL>>
+  leave_type : VARCHAR(64) <<NOT NULL>>
+  miscarriage_type : VARCHAR(64)
+  leave_days : INTEGER <<NOT NULL>>
+  is_extendable : BOOLEAN <<NOT NULL>>
+  has_allowance : BOOLEAN <<NOT NULL>>
+}
+
+entity t_allowance_rules {
+  * id : SERIAL <<PK>>
+  --
+  city : VARCHAR(50) <<NOT NULL>> {U}
+  social_average_wage : NUMERIC(12,2)
+  company_average_wage : NUMERIC(12,2)
+  company_contribution_wage : NUMERIC(12,2)
+  calculation_base : VARCHAR(20)
+  payout_method : VARCHAR(20)
+  maternity_policy : TEXT
+  allowance_policy : TEXT
+}
+
+entity t_employees {
+  * id : SERIAL <<PK>>
+  --
+  employee_no : VARCHAR(20) <<UNIQUE>>
+  employee_name : VARCHAR(50)
+  city : VARCHAR(50)
+  personal_ss_monthly : DECIMAL(12,2)
+  employee_basic_salary : DECIMAL(12,2)
+  employee_base_salary_current : DECIMAL(12,2)
+  is_difficult_birth : BOOLEAN
+  number_of_babies : INTEGER
+  pregnancy_period : VARCHAR(32)
+}
+
+entity t_refund_rules {
+  * id : SERIAL <<PK>>
+  --
+  city : VARCHAR(50)
+  start_month : CHAR(7)
+  end_month : CHAR(7)
+  refund_description : TEXT
+  refund_amount : NUMERIC(12,2)
+  direct_display : BOOLEAN
+  single_month_only : BOOLEAN
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+entity t_holidays {
+  * id : SERIAL <<PK>>
+  --
+  holiday_name : VARCHAR(100)
+  holiday_date : DATE {U}
+  holiday_type : VARCHAR(20)
+  is_legal_holiday : BOOLEAN
+}
+
+' Index/constraint notes
+note right of t_maternity_rules
+  Unique index: idx_t_maternity_rules_unique(city, leave_type, COALESCE(miscarriage_type, ''))
+end note
+
+note right of t_allowance_rules
+  Unique index: idx_t_allowance_rules_city(city)
+end note
+
+note right of t_employees
+  Indexes: idx_employees_city(city), idx_employees_no(employee_no)
+  Comment: t_employees is the employee master table
+end note
+
+note right of t_refund_rules
+  Indexes: idx_refund_rules_city(city)
+end note
+
+note right of t_holidays
+  Unique constraint: uq_holiday_date(holiday_date)
+end note
+
+' Inferred associations (no explicit FK constraints in the SQL)
+t_allowance_rules ..> t_employees : city (inferred)
+t_maternity_rules ..> t_employees : city (inferred)
+t_refund_rules ..> t_employees : city (inferred)
+
+legend left
+  |= PK |= Primary key |
+  |= {U} |= Unique index |
+  |= ..> |= Inferred association (no FK defined in SQL) |
+endlegend
+
+@enduml

@@ -1,0 +1,20 @@
+@startsalt "智能助手-对话示例"
+{
+    !include __fragment/智能助手-页头.puml
+    !include __fragment/欢迎语.puml
+
+    {
+        ' 用户提问右对齐
+        {^用户
+            你好，给我介绍一下上海产假和生育津贴的政策
+        }
+
+        ' AI回答左对齐
+        {^AI
+            非常好的问题！以下是上海产假和生育津贴的政策
+            ……（具体内容省略）
+        }
+    }
+    !include __fragment/对话输入框.puml
+}
+@endsalt

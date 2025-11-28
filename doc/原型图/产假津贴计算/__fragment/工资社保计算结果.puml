@@ -1,0 +1,43 @@
+@startsalt "工资、社保公积金、工会费计算结果"
+{
+    {
+        <b>工资、社保公积金、工会费计算结果</b> | [请假日历 👁️]
+    }
+    
+    {+
+        <b>产假首月应发工资：<color:green>¥4,825.65</color></b> <color:grey>(无需返还，工资够扣除)</color>
+        --
+        <size:11><color:grey>计算过程：</color></size>
+        <size:11>应发工资 = 员工基本工资 / (工作日18天 + 法定假日3天) × 出勤10天</size>
+        <size:11>= 20000.00 / (18 + 3) × 10 = <b>9523.81</b></size>
+        <size:11>减扣后 = 应发工资 - 个人部分社保公积金 - 工会费</size>
+        <size:11>= 9523.81 - 4648.16 - 50.00 = <b><color:green>4825.65</color></b></size>
+    }
+    
+    {+
+        <b>产假结束月应发工资：<color:green>¥8,029.11</color></b> <color:grey>(无需返还，工资够扣除)</color>
+        --
+        <size:11><color:grey>计算过程：</color></size>
+        <size:11>应发工资 = 员工基本工资 / 工作日22天 × 出勤14天</size>
+        <size:11>= 20000.00 / 22 × 14 = <b>12727.27</b></size>
+        <size:11>减扣后 = 应发工资 - 个人部分社保公积金 - 工会费</size>
+        <size:11>= 12727.27 - 4648.16 - 50.00 = <b><color:green>8029.11</color></b></size>
+    }
+    
+    {+
+        <b>返还个人部分社保公积金合计：<color:blue>¥23,240.80</color></b>
+        --
+        <size:11><color:grey>计算过程：</color></size>
+        <size:11>月度个人部分社保公积金合计 4648.16 × 5个月（2025-11 - 2026-03）</size>
+        <size:11>= 4648.16 × 5 = <b><color:blue>23240.80</color></b></size>
+    }
+    
+    {+
+        <b>返还工会费合计：<color:blue>¥250.00</color></b>
+        --
+        <size:11><color:grey>计算过程：</color></size>
+        <size:11>工会费 ¥50 × 5个月(2025-11 - 2026-03)</size>
+        <size:11>= 50 × 5 = <b><color:blue>250.00</color></b></size>
+    }
+}
+@endsalt

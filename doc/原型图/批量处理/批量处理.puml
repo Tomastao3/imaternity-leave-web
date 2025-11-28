@@ -1,0 +1,8 @@
+@startsalt "批量处理 - 默认"
+{
+    !include __fragment/批量处理-页头.puml
+    !include __fragment/欢迎语.puml
+
+    !include __fragment/工具栏.puml
+}
+@endsalt

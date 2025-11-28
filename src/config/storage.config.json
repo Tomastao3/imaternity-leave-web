@@ -1,0 +1,25 @@
+{
+  "storageMode": "indexeddb",
+  "apiBaseUrl": {
+    "indexeddb": "/api",
+    "postgres": "http://localhost:3001/api"
+  },
+  "postgres": {
+    "host": "localhost",
+    "port": 5450,
+    "database": "mydatabase",
+    "user": "postgres",
+    "password": "123",
+    "pool": {
+      "max": 10,
+      "min": 1,
+      "idle": 10000,
+      "acquire": 30000,
+      "evict": 1000
+    },
+    "ssl": {
+      "enabled": false,
+      "rejectUnauthorized": false
+    }
+  }
+}

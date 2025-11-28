@@ -1,0 +1,7 @@
+@startsalt "批量处理-页头"
+{
+    !include ../../__fragment/page-header.puml
+
+    {/ 产假津贴计算 | <b><color:#a44d69>批量处理</color></b> | 智能助手 | 基础数据管理 }
+}
+@endsalt

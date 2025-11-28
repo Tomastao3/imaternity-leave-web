@@ -1,0 +1,39 @@
+@startuml 流程图
+title 流程：产假津贴计算序列图
+autonumber
+
+actor U as "用户 (HR/员工)"
+participant AC as "FE: AllowanceCalculator"
+participant CDM as "FE: cityDataManager"
+participant HU as "FE: holidayUtils"
+participant PC as "FE: Postgres Clients"
+participant API as "BE: Express /api"
+participant SVC as "BE: Services"
+participant DB as "PG: Tables"
+
+U ->> AC : 选择城市/员工/生产条件\n点击“计算”
+AC ->> CDM : loadData() 获取规则与员工
+
+alt StorageMode = postgres
+    AC ->> PC : listMaternityRules/listAllowanceRules/listRefundRules/listEmployees
+    PC ->> API : GET /maternity-rules?city=... 等
+    API ->> SVC : 调用对应 service
+    SVC ->> DB : SELECT ...
+    DB -->> SVC : rows
+    SVC -->> API : { success, data }
+    API -->> PC : 200 JSON
+    PC -->> CDM : 规则与员工数据
+else StorageMode = indexeddb
+    CDM -->> AC : 从 IndexedDB 读取内存态数据
+end
+
+AC ->> HU : warmUpHolidayPlan(year), getHolidaySets(year)
+HU ->> DB : (若 postgres 模式) 通过 BE 读取/预热（由管理动作写入）
+HU -->> AC : { holidays, makeupWorkdays }
+
+AC ->> AC : calculateMaternityAllowance(...) 依据规则+节假日顺延
+AC -->> U : 显示产假天数、起止、政府津贴、应领、补差、返还项
+U ->> AC : 导出 PDF/Excel
+AC ->> AC : exportAllowancePdf()/exportAllowanceExcel()
+
+@enduml

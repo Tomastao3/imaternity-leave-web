@@ -1,0 +1,14 @@
+@startsalt "对话输入框"
+{
+    ' 对话框，placeholder 为 "你好，请说~"
+    {
+        <color:grey>你好，请说~</color>
+        "                "
+    }
+
+    {
+        ' 按钮右对齐
+        [发送]
+    }
+}
+@endsalt

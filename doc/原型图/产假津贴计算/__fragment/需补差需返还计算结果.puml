@@ -1,0 +1,41 @@
+@startsalt "需补差、需返还计算结果"
+{
+    {+
+        <b>政府发放金额：<color:blue>¥212,911.10</color></b>
+        --
+        <color:grey>计算过程：</color>
+        <size:11>取小值（单位上年度月平均工资 49000.00, 三倍社保上限 36921.00）</size>
+        <size:11>= 36921.00 / 30 × 173天 = <b>212911.10</b></size>
+    }
+    
+    {+
+        <b>员工应领取金额：<color:green>¥282,566.67</color></b>
+        --
+        <size:11><color:grey>计算过程：</color></size>
+        <size:11>取大值（单位上年度月平均工资 49000.00, 员工产前12月平均工资 12821.79）</size>
+        <size:11>= 49000.00 / 30 × 173天（享受津贴天数）</size>
+        <size:11>= <b><color:green>282566.67</color></b></size>
+    }
+    
+    {+
+        <b>需补差：<color:orange>¥45,964.77</color></b>
+        --
+        <size:11><color:grey>计算过程：</color></size>
+        <size:11>员工应领取 - 政府发放</size>
+        <size:11>= 282566.67 - 212911.10</size>
+        <size:11>= <b><color:orange>45964.77</color></b></size>
+    }
+    
+    {+
+        <b>需返还：<color:red>¥23,690.80</color></b>
+        --
+        <size:11><color:grey>计算过程：</color></size>
+        <size:11>发放Spot On: -100.00</size>
+        <size:11>月弹性福利自费: 300.00</size>
+        <size:11>工会费 × 5个月(2025-11 - 2026-03): 250.00</size>
+        <size:11>月度个人部分社保公积金合计 × 5个月(2025-11 - 2026-03): 23240.80</size>
+        <size:11>= -100.00 + 300.00 + 250.00 + 23240.80</size>
+        <size:11>= <b><color:red>23690.80</color></b></size>
+    }
+}
+@endsalt

@@ -1,0 +1,8 @@
+@startsalt "智能助手-默认"
+{
+    !include __fragment/智能助手-页头.puml
+    !include __fragment/欢迎语.puml
+
+    !include __fragment/对话输入框.puml
+}
+@endsalt
