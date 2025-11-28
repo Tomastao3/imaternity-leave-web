@@ -2,6 +2,7 @@
 import { cityDataManager, MATERNITY_LEAVE_TYPES, PREGNANCY_PERIODS } from './cityDataUtils';
 import { addDays, format } from 'date-fns';
 import { findCityByEmployeeName, findEmployeeById, calculateMaternityAllowance, validateEmployeeData } from './maternityCalculations';
+import { buildAllowanceBreakdown } from './allowanceBreakdown';
 
 // 产假周期计算
 export const calculateMaternityPeriod = (startDate, maternityDays) => {
@@ -113,75 +114,209 @@ export const calculateDeduction = (employeeAvgSalary, maternityDays) => {
 export const processBatchData = (employees) => {
   const results = [];
   const errors = [];
-  
+
   // 确保数据已加载
   cityDataManager.loadData();
-  
+
+  const trimString = (value) => (typeof value === 'string' ? value.trim() : value);
+  const parseNumber = (value) => {
+    if (value === null || value === undefined || value === '') return NaN;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
+    const normalized = String(value).replace(/[\s,]/g, '');
+    const parsed = parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : NaN;
+  };
+  const normalizeBoolean = (value) => {
+    if (typeof value === 'boolean') return value;
+    if (value == null) return false;
+    const normalized = String(value).trim().toLowerCase();
+    return ['是', 'true', '1', 'y', 'yes'].includes(normalized);
+  };
+  const safeNumber = (value) => (Number.isFinite(value) ? value : 0);
+
   employees.forEach((employee, index) => {
     const rowNumber = index + 2; // Excel行号（考虑标题行）
-    
-    // 通过员工姓名查找城市
-    const city = findCityByEmployeeName(employee.name);
-    if (city) {
-      employee.city = city;
+    const name = trimString(employee.name);
+    const employeeId = trimString(employee.employeeId);
+
+    let resolvedCity = trimString(employee.city);
+    if (!resolvedCity && name) {
+      const cityByName = findCityByEmployeeName(name);
+      if (cityByName) {
+        resolvedCity = trimString(cityByName);
+      }
     }
-    
+    if (!resolvedCity && employeeId) {
+      const employeeRecord = findEmployeeById(employeeId);
+      if (employeeRecord && employeeRecord.city) {
+        resolvedCity = trimString(employeeRecord.city);
+      }
+    }
+    if (resolvedCity) {
+      employee.city = resolvedCity;
+    }
+
     const validationErrors = validateEmployeeData(employee);
-    
+
     if (validationErrors.length > 0) {
       errors.push({
         row: rowNumber,
-        name: employee.name || '未知',
-        employeeId: employee.employeeId || '未知',
+        name: name || '未知',
+        employeeId: employeeId || '未知',
         errors: validationErrors
       });
       return;
     }
-    
+
     try {
-      // 解析产假情况
-      const isDifficultBirth = employee.isDifficultBirth === true || employee.isDifficultBirth === '是' || employee.isDifficultBirth === 'true';
-      const numberOfBabies = parseInt(employee.numberOfBabies) || 1;
-      const pregnancyPeriod = employee.pregnancyPeriod || PREGNANCY_PERIODS.ABOVE_7_MONTHS;
-      
-      // 获取员工基本工资（兼容新旧字段名）
-      const employeeSalary = employee.employeeBasicSalary || employee.basicSalary;
-      
-      // 使用公共计算函数
+      const city = employee.city;
+      const employeeBasicSalaryNumber = parseNumber(employee.employeeBasicSalary ?? employee.basicSalary);
+      const employeeBaseSalaryCurrent = parseNumber(employee.employeeBaseSalary ?? employee.employeeBaseSalaryCurrent);
+      const companyAvgSalaryOverride = parseNumber(
+        employee.companyAvgSalaryOverride ?? employee.companyAverageSalaryOverride ?? employee.companyAvgSalary ?? employee.companyAverageSalary
+      );
+      const socialInsuranceLimitOverride = parseNumber(
+        employee.socialInsuranceLimitOverride ?? employee.socialInsuranceLimit ?? employee.socialLimitOverride ?? employee.socialLimit
+      );
+      const overrideGovernmentPaidAmount = parseNumber(employee.overrideGovernmentPaidAmount);
+      const overridePersonalSSMonthly = parseNumber(employee.overridePersonalSSMonthly);
+      const companyPaidAmount = parseNumber(employee.companyPaidWage ?? employee.companyPaidAmount);
+      const numberOfBabies = Number.isFinite(parseInt(employee.numberOfBabies, 10))
+        ? parseInt(employee.numberOfBabies, 10)
+        : 1;
+      const pregnancyPeriod = trimString(employee.pregnancyPeriod) || PREGNANCY_PERIODS.ABOVE_7_MONTHS;
+      const paymentMethodRaw = trimString(employee.paymentMethod);
+      const paymentMethod = paymentMethodRaw
+        ? paymentMethodRaw.includes('个')
+          ? '个人账户'
+          : paymentMethodRaw.includes('企')
+            ? '企业账户'
+            : paymentMethodRaw
+        : '企业账户';
+      const overrideEndDate = trimString(employee.endDateOverride || employee.overrideEndDate || employee.endDate) || null;
+      const isDifficultBirth = normalizeBoolean(employee.isDifficultBirth);
+      const meetsSupplementalDifficultBirth = normalizeBoolean(employee.meetsSupplementalDifficultBirth);
+      const isMiscarriage = normalizeBoolean(employee.isMiscarriage);
+      const doctorAdviceDaysRaw = employee.doctorAdviceDays;
+      const doctorAdviceDays = Number.isFinite(parseInt(doctorAdviceDaysRaw, 10))
+        ? parseInt(doctorAdviceDaysRaw, 10)
+        : null;
+      const isSecondThirdChild = normalizeBoolean(employee.isSecondThirdChild);
+
+      const salaryAdjustment = employee.salaryAdjustment && typeof employee.salaryAdjustment === 'object'
+        ? {
+            before: parseNumber(employee.salaryAdjustment.before),
+            after: parseNumber(employee.salaryAdjustment.after),
+            month: trimString(employee.salaryAdjustment.month)
+          }
+        : null;
+
+      const socialSecurityAdjustment = employee.socialSecurityAdjustment && typeof employee.socialSecurityAdjustment === 'object'
+        ? {
+            before: parseNumber(employee.socialSecurityAdjustment.before),
+            after: parseNumber(employee.socialSecurityAdjustment.after),
+            month: trimString(employee.socialSecurityAdjustment.month)
+          }
+        : null;
+
       const allowanceResult = calculateMaternityAllowance(
         city,
-        employeeSalary,
+        employeeBasicSalaryNumber,
         employee.startDate,
         isDifficultBirth,
         numberOfBabies,
-        pregnancyPeriod
+        pregnancyPeriod,
+        paymentMethod,
+        overrideEndDate,
+        isMiscarriage,
+        doctorAdviceDays,
+        meetsSupplementalDifficultBirth,
+        Number.isFinite(overrideGovernmentPaidAmount) ? overrideGovernmentPaidAmount : null,
+        Number.isFinite(overridePersonalSSMonthly) ? overridePersonalSSMonthly : null,
+        Number.isFinite(companyAvgSalaryOverride) ? companyAvgSalaryOverride : null,
+        Number.isFinite(socialInsuranceLimitOverride) ? socialInsuranceLimitOverride : null,
+        Number.isFinite(employeeBaseSalaryCurrent) ? employeeBaseSalaryCurrent : null,
+        salaryAdjustment,
+        socialSecurityAdjustment,
+        isSecondThirdChild
       );
-      
-      // 计算社保公积金扣除
-      const deductionResult = calculateDeduction(employeeSalary, allowanceResult.totalMaternityDays);
-      
+
+      const deductionResult = calculateDeduction(
+        Number.isFinite(employeeBasicSalaryNumber) ? employeeBasicSalaryNumber : allowanceResult.employeeReceivable,
+        allowanceResult.totalMaternityDays
+      );
+
+      const deductionEntries = Array.isArray(employee.deductions)
+        ? employee.deductions
+            .map((item) => ({
+              amount: parseNumber(item?.amount),
+              note: trimString(item?.note)
+            }))
+            .filter((item) => Number.isFinite(item.amount) && item.amount > 0)
+        : [];
+
+      const allowancesBreakdown = buildAllowanceBreakdown(allowanceResult, {
+        deductions: deductionEntries,
+        paidWageDuringLeave: companyPaidAmount,
+        overrideGovernmentPaidAmount,
+        employeeBasicSalaryInput: employeeBasicSalaryNumber
+      });
+
+      const supplementInfo = allowancesBreakdown.supplement?.details;
+      const adjustedSupplement = allowancesBreakdown.supplement?.adjusted || 0;
+      const totalDeductions = allowancesBreakdown.supplement?.totalDeductions || 0;
+      const supplementProcess = allowancesBreakdown.supplement?.process || '';
+      const deductionSummary = supplementInfo?.deductionSummary || '0';
+      const companyPaidFinal = supplementInfo?.companyPaidAmount ?? 0;
+
+      const overrideFlags = {
+        overrideGovernmentPaidAmount: Number.isFinite(overrideGovernmentPaidAmount),
+        overridePersonalSSMonthly: Number.isFinite(overridePersonalSSMonthly),
+        overrideCompanyAvg: Number.isFinite(companyAvgSalaryOverride),
+        overrideSocialLimit: Number.isFinite(socialInsuranceLimitOverride)
+      };
+
       results.push({
         // 基本信息
-        name: employee.name,
-        employeeId: employee.employeeId,
-        city: city,
+        name,
+        employeeId,
+        city,
         department: employee.department || '',
         position: employee.position || '',
-        
+        paymentMethod,
+
         // 输入数据
         startDate: employee.startDate,
-        basicSalary: parseFloat(employeeSalary),
-        employeeBasicSalary: parseFloat(employeeSalary),
+        endDateOverride: overrideEndDate,
+        basicSalary: safeNumber(employeeBasicSalaryNumber),
+        employeeBasicSalary: safeNumber(employeeBasicSalaryNumber),
+        employeeBaseSalary: Number.isFinite(employeeBaseSalaryCurrent) ? parseFloat(employeeBaseSalaryCurrent.toFixed(2)) : null,
+        companyAvgSalaryOverride: Number.isFinite(companyAvgSalaryOverride) ? parseFloat(companyAvgSalaryOverride.toFixed(2)) : null,
+        socialInsuranceLimitOverride: Number.isFinite(socialInsuranceLimitOverride) ? parseFloat(socialInsuranceLimitOverride.toFixed(2)) : null,
         isDifficultBirth,
         numberOfBabies,
         pregnancyPeriod,
-        
+        isMiscarriage,
+        doctorAdviceDays,
+        meetsSupplementalDifficultBirth,
+        isSecondThirdChild,
+        overrideFlags,
+        salaryAdjustment,
+        socialSecurityAdjustment,
+        companyPaidAmount: parseFloat(companyPaidFinal.toFixed(2)),
+        deductions: deductionEntries,
+        deductionsTotal: parseFloat(totalDeductions.toFixed(2)),
+        deductionSummary,
+        remark: employee.remark || '',
+
         // 产假周期计算结果
-        endDate: allowanceResult.calculatedPeriod ? allowanceResult.calculatedPeriod.endDate : '',
+        endDate: allowanceResult.calculatedPeriod ? allowanceResult.calculatedPeriod.endDate : overrideEndDate || '',
         totalMaternityDays: allowanceResult.totalMaternityDays,
         workingDays: allowanceResult.calculatedPeriod ? allowanceResult.calculatedPeriod.workingDays : 0,
         appliedRules: allowanceResult.appliedRules,
-        
+        appliedPolicySummary: allowanceResult.appliedPolicySummary,
+        calculatedPeriod: allowanceResult.calculatedPeriod,
+
         // 产假津贴计算结果
         socialInsuranceBase: allowanceResult.socialInsuranceBase,
         maternityAllowanceBase: allowanceResult.maternityAllowanceBase,
@@ -189,16 +324,22 @@ export const processBatchData = (employees) => {
         maternityAllowance: allowanceResult.maternityAllowance,
         companyShouldPay: allowanceResult.companyShouldPay,
         companySupplement: allowanceResult.companySupplement,
+        governmentPaidAmount: allowanceResult.governmentPaidAmount,
+        employeeReceivable: allowanceResult.employeeReceivable,
+        adjustedSupplement,
+        supplementProcess,
+        deductionSummaryDisplay: deductionSummary,
         personalSocialSecurity: allowanceResult.personalSocialSecurity,
+        personalSSBreakdown: allowanceResult.personalSSBreakdown,
         totalReceived: allowanceResult.totalReceived,
-        
+
         // 社保公积金扣除结果
         monthlyPensionDeduction: deductionResult.monthlyDeductions.pension,
         monthlyMedicalDeduction: deductionResult.monthlyDeductions.medical,
         monthlyUnemploymentDeduction: deductionResult.monthlyDeductions.unemployment,
         monthlyHousingDeduction: deductionResult.monthlyDeductions.housing,
         totalMonthlyDeduction: deductionResult.monthlyDeductions.total,
-        
+
         actualPensionDeduction: deductionResult.actualDeductions.pension,
         actualMedicalDeduction: deductionResult.actualDeductions.medical,
         actualUnemploymentDeduction: deductionResult.actualDeductions.unemployment,
@@ -208,12 +349,12 @@ export const processBatchData = (employees) => {
     } catch (error) {
       errors.push({
         row: rowNumber,
-        name: employee.name || '未知',
-        employeeId: employee.employeeId || '未知',
+        name: name || '未知',
+        employeeId: employeeId || '未知',
         errors: [`计算错误: ${error.message}`]
       });
     }
   });
-  
+
   return { results, errors };
 };

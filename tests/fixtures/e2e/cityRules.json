@@ -1,0 +1,80 @@
+{
+  "comment": "城市规则测试数据 - 用于E2E测试的城市配置",
+  "shanghai": {
+    "city": "上海",
+    "description": "上海标准计算公式",
+    "testCase": {
+      "city": "上海",
+      "employeeBasicSalary": 20000,
+      "companyAvgSalary": 25000,
+      "socialInsuranceLimit": 31500,
+      "startDate": "2025-03-01",
+      "isDifficultBirth": false,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "paymentMethod": "企业账户"
+    },
+    "expectedResults": {
+      "totalMaternityDays": 158,
+      "formulaType": "standard"
+    }
+  },
+  "shenzhen": {
+    "city": "深圳",
+    "description": "深圳标准计算公式",
+    "testCase": {
+      "city": "深圳",
+      "employeeBasicSalary": 22000,
+      "companyAvgSalary": 28000,
+      "socialInsuranceLimit": 34188,
+      "startDate": "2025-04-01",
+      "isDifficultBirth": false,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "paymentMethod": "企业账户"
+    },
+    "expectedResults": {
+      "totalMaternityDays": 178,
+      "formulaType": "standard"
+    }
+  },
+  "chengdu": {
+    "city": "成都",
+    "description": "成都特殊公式 (* 12 / 365)",
+    "testCase": {
+      "city": "成都",
+      "employeeBasicSalary": 18500,
+      "companyAvgSalary": 24500,
+      "socialInsuranceLimit": 32000,
+      "startDate": "2025-03-01",
+      "isDifficultBirth": true,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "paymentMethod": "企业账户"
+    },
+    "expectedResults": {
+      "totalMaternityDays": 158,
+      "formulaType": "chengduDaily",
+      "processContains": "* 12 / 365"
+    }
+  },
+  "tianjin": {
+    "city": "天津",
+    "description": "天津特殊公式 (/ 30.4)",
+    "testCase": {
+      "city": "天津",
+      "employeeBasicSalary": 21000,
+      "companyAvgSalary": 26000,
+      "socialInsuranceLimit": 33000,
+      "startDate": "2025-04-10",
+      "isDifficultBirth": false,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "paymentMethod": "个人账户"
+    },
+    "expectedResults": {
+      "formulaType": "tianjin",
+      "processContains": " / 30.4 *"
+    }
+  }
+}

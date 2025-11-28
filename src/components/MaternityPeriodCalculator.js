@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { addDays, format, differenceInDays } from 'date-fns';
-import { cityDataManager, MATERNITY_LEAVE_TYPES, PREGNANCY_PERIODS } from '../utils/cityDataUtils';
+import { PREGNANCY_PERIODS } from '../utils/cityDataUtils';
+import { calculateMaternityDaysApi, listCitiesApi, listEmployeesByCityApi } from '../api/maternityApi';
 
 const MaternityDaysCalculator = () => {
   const [selectedCity, setSelectedCity] = useState('');
@@ -19,16 +19,30 @@ const MaternityDaysCalculator = () => {
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    cityDataManager.loadData();
-    setCities(cityDataManager.getCities());
+    // 使用模拟 API 加载城市列表
+    let mounted = true;
+    (async () => {
+      const res = await listCitiesApi();
+      if (mounted && res.ok) {
+        setCities(res.data || []);
+      }
+    })();
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
     if (selectedCity) {
-      const cityEmployees = cityDataManager.getEmployeesByCity(selectedCity);
-      setEmployees(cityEmployees);
-      setSelectedEmployee(null);
-      setEmployeeId('');
+      // 使用模拟 API 按城市加载员工
+      let mounted = true;
+      (async () => {
+        const res = await listEmployeesByCityApi({ city: selectedCity });
+        if (mounted && res.ok) {
+          setEmployees(res.data || []);
+          setSelectedEmployee(null);
+          setEmployeeId('');
+        }
+      })();
+      return () => { mounted = false; };
     }
   }, [selectedCity]);
 
@@ -55,87 +69,34 @@ const MaternityDaysCalculator = () => {
     }
   }, [selectedCity, employeeId, startDate, isDifficultBirth, numberOfBabies, pregnancyPeriod]);
 
-  const autoCalculateMaternityDays = () => {
-    if (!selectedCity) return;
-
-    let totalDays = 0;
-    const maternityRules = cityDataManager.getMaternityRulesByCity(selectedCity);
-    const appliedRules = [];
-
-    // 基础产假（法定产假）
-    const legalRule = maternityRules.find(rule => rule.leaveType === MATERNITY_LEAVE_TYPES.LEGAL);
-    if (legalRule) {
-      totalDays += legalRule.days;
-      appliedRules.push({ type: '法定产假', days: legalRule.days });
-    }
-
-    // 难产假
-    if (isDifficultBirth) {
-      const difficultRule = maternityRules.find(rule => rule.leaveType === MATERNITY_LEAVE_TYPES.DIFFICULT_BIRTH);
-      if (difficultRule) {
-        totalDays += difficultRule.days;
-        appliedRules.push({ type: '难产假', days: difficultRule.days });
-      }
-    }
-
-    // 多胞胎假
-    if (numberOfBabies > 1) {
-      const multipleRule = maternityRules.find(rule => rule.leaveType === MATERNITY_LEAVE_TYPES.MULTIPLE_BIRTH);
-      if (multipleRule) {
-        const extraDays = multipleRule.days * (numberOfBabies - 1);
-        totalDays += extraDays;
-        appliedRules.push({ type: `多胞胎假(${numberOfBabies}胎)`, days: extraDays });
-      }
-    }
-
-    // 奖励假
-    const rewardRule = maternityRules.find(rule => rule.leaveType === MATERNITY_LEAVE_TYPES.REWARD);
-    if (rewardRule) {
-      totalDays += rewardRule.days;
-      appliedRules.push({ type: '奖励假', days: rewardRule.days });
-    }
-
-    // 流产假（根据时间段）
-    if (pregnancyPeriod !== PREGNANCY_PERIODS.ABOVE_7_MONTHS) {
-      const miscarriageRule = maternityRules.find(rule => rule.leaveType === MATERNITY_LEAVE_TYPES.MISCARRIAGE);
-      if (miscarriageRule) {
-        let miscarriageDays = miscarriageRule.days;
-        if (pregnancyPeriod === PREGNANCY_PERIODS.BELOW_4_MONTHS) {
-          miscarriageDays = Math.floor(miscarriageDays / 2);
+  const autoCalculateMaternityDays = async () => {
+    if (!selectedCity || !startDate) return;
+    const req = {
+      city: selectedCity,
+      startDate,
+      isDifficultBirth,
+      numberOfBabies,
+      pregnancyPeriod,
+    };
+    const res = await calculateMaternityDaysApi(req);
+    if (res.ok) {
+      const data = res.data;
+      setResult({
+        selectedCity: data.city,
+        selectedEmployee,
+        totalMaternityDays: data.totalMaternityDays,
+        appliedRules: data.appliedRules || [],
+        calculatedPeriod: data.calculatedPeriod || null,
+        pregnancyConditions: data.pregnancyConditions || {
+          isDifficultBirth,
+          numberOfBabies,
+          pregnancyPeriod,
         }
-        totalDays = miscarriageDays;
-        appliedRules.length = 0;
-        appliedRules.push({ type: `流产假(${pregnancyPeriod})`, days: miscarriageDays });
-      }
+      });
+    } else {
+      // 简单错误提示
+      console.error('计算失败: ', res.error);
     }
-
-    // 计算结束日期
-    let calculatedPeriod = null;
-    if (startDate && totalDays > 0) {
-      const start = new Date(startDate);
-      const end = addDays(start, totalDays - 1);
-      
-      calculatedPeriod = {
-        startDate: format(start, 'yyyy年MM月dd日'),
-        endDate: format(end, 'yyyy年MM月dd日'),
-        actualDays: totalDays,
-        workingDays: Math.floor(totalDays * 5 / 7),
-        period: `${format(start, 'yyyy年MM月dd日')} - ${format(end, 'yyyy年MM月dd日')}`
-      };
-    }
-
-    setResult({
-      selectedCity,
-      selectedEmployee,
-      totalMaternityDays: totalDays,
-      appliedRules,
-      calculatedPeriod,
-      pregnancyConditions: {
-        isDifficultBirth,
-        numberOfBabies,
-        pregnancyPeriod
-      }
-    });
   };
 
   const calculateMaternityDays = () => {

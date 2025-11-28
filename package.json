@@ -9,8 +9,13 @@
     "@testing-library/user-event": "^13.5.0",
     "date-fns": "^2.29.3",
     "file-saver": "^2.0.5",
+    "html2pdf.js": "^0.12.1",
+    "jspdf": "^3.0.3",
+    "jspdf-autotable": "^5.0.2",
+    "omggif": "^1.0.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
@@ -20,7 +25,12 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "e2e:start": "react-scripts build && npx serve -s build -l 3000"
+    "e2e:start": "react-scripts build && npx serve -s build -l 3000",
+    "reset-config": "node tests/scripts/reset-config.js",
+    "test:e2e": "npx playwright test tests/e2e/",
+    "test:e2e:headed": "npx playwright test tests/e2e/ --headed",
+    "test:e2e:debug": "npx playwright test tests/e2e/ --debug",
+    "test:report": "npx playwright show-report"
   },
   "eslintConfig": {
     "extends": [
@@ -42,6 +52,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
+    "cross-env": "^10.1.0",
     "serve": "^14.2.5"
   }
 }

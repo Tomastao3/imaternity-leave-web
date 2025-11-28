@@ -1,0 +1,99 @@
+{
+  "comment": "测试用员工数据 - 这些数据仅用于测试，不会出现在实际系统中",
+  "validEmployee": {
+    "employeeName": "测试员工张三",
+    "employeeId": "TEST_EMP_001",
+    "basicSalary": 15000,
+    "city": "上海",
+    "department": "测试部门",
+    "position": "测试工程师"
+  },
+  "validEmployee2": {
+    "employeeName": "测试员工李四",
+    "employeeId": "TEST_EMP_002",
+    "basicSalary": 18000,
+    "city": "深圳",
+    "department": "测试部门",
+    "position": "高级测试工程师"
+  },
+  "invalidEmployee": {
+    "employeeName": "不存在的测试员工",
+    "employeeId": "INVALID_TEST_EMP"
+  },
+  "hrUser": {
+    "username": "测试HR管理员",
+    "role": "hr"
+  },
+  "batchEmployees": [
+    {
+      "employeeId": "TEST_BATCH_001",
+      "employeeName": "批量测试员工1",
+      "city": "上海",
+      "startDate": "2025-03-01",
+      "companyAvgSalary": 20000,
+      "paymentMethod": "企业账户",
+      "isDifficultBirth": false,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "department": "测试部",
+      "position": "员工",
+      "remark": "正常测试数据"
+    },
+    {
+      "employeeId": "TEST_BATCH_002",
+      "employeeName": "批量测试员工2",
+      "city": "深圳",
+      "startDate": "2025-04-15",
+      "companyAvgSalary": 25000,
+      "paymentMethod": "个人账户",
+      "isDifficultBirth": true,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "department": "测试部",
+      "position": "员工",
+      "remark": "难产测试数据"
+    },
+    {
+      "employeeId": "TEST_BATCH_003",
+      "employeeName": "批量测试员工3",
+      "city": "成都",
+      "startDate": "2025-05-20",
+      "companyAvgSalary": 18000,
+      "paymentMethod": "企业账户",
+      "isDifficultBirth": false,
+      "numberOfBabies": 2,
+      "pregnancyPeriod": "7个月以上",
+      "department": "测试部",
+      "position": "员工",
+      "remark": "双胞胎测试数据"
+    },
+    {
+      "employeeId": "TEST_BATCH_INVALID_001",
+      "employeeName": "批量测试错误数据1",
+      "city": "",
+      "startDate": "2025-06-01",
+      "companyAvgSalary": "",
+      "paymentMethod": "企业账户",
+      "isDifficultBirth": false,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "department": "测试部",
+      "position": "员工",
+      "remark": "缺少必填字段-城市和工资"
+    },
+    {
+      "employeeId": "TEST_BATCH_INVALID_002",
+      "employeeName": "批量测试错误数据2",
+      "city": "不存在的城市",
+      "startDate": "invalid-date",
+      "companyAvgSalary": 22000,
+      "paymentMethod": "企业账户",
+      "isDifficultBirth": false,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "department": "测试部",
+      "position": "员工",
+      "remark": "无效城市和日期格式"
+    }
+  ]
+}

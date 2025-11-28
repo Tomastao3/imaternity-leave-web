@@ -1,0 +1,78 @@
+{
+  "baseline": {
+    "description": "默认场景，无扣减且未发放公司工资",
+    "input": {
+      "resultData": {
+        "city": "上海",
+        "maternityAllowance": 35000,
+        "governmentPaidAmount": 35000,
+        "employeeReceivable": 42000,
+        "totalMaternityDays": 158,
+        "dailyAllowance": 221.52,
+        "maternityAllowanceBase": 10500,
+        "debugInfo": {
+          "companyAvg": 12000,
+          "socialLimit": 31500
+        }
+      }
+    },
+    "assertions": {
+      "governmentFormatted": "35000.00",
+      "employeeFormatted": "42000.00",
+      "supplementAdjusted": "7000.00"
+    }
+  },
+  "withOverrides": {
+    "description": "手工覆盖政府金额，需显示手工填写值",
+    "input": {
+      "resultData": {
+        "city": "杭州",
+        "governmentPaidAmount": 20000,
+        "employeeReceivable": 26000,
+        "totalMaternityDays": 158,
+        "debugInfo": {
+          "companyAvg": 15000,
+          "socialLimit": 36000
+        }
+      },
+      "options": {
+        "overrideGovernmentPaidAmount": 18000
+      }
+    },
+    "assertions": {
+      "governmentProcessIncludes": "手工填写值"
+    }
+  },
+  "withDeductions": {
+    "description": "包含多条扣减和公司已发工资",
+    "input": {
+      "resultData": {
+        "city": "成都",
+        "governmentPaidAmount": 28000,
+        "employeeReceivable": 36000,
+        "companySupplement": 12000,
+        "totalMaternityDays": 180,
+        "debugInfo": {
+          "companyAvg": 18000,
+          "socialLimit": 40000,
+          "employeeReceivableBase": 17000,
+          "employeeReceivableFormulaType": "chengduDaily"
+        }
+      },
+      "options": {
+        "deductions": [
+          { "note": "税费", "amount": 1500 },
+          { "note": "社保补扣", "amount": 800 },
+          { "note": "无效记录", "amount": 0 }
+        ],
+        "paidWageDuringLeave": 3000
+      }
+    },
+    "assertions": {
+      "totalDeductions": 2300,
+      "companyPaidAmount": 3000,
+      "adjustedSupplement": 8700,
+      "deductionSummaryIncludes": "税费"
+    }
+  }
+}

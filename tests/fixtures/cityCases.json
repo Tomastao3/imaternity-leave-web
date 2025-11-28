@@ -1,0 +1,84 @@
+{
+  "chengdu": {
+    "description": "成都 - 政府津贴按 12/365 折算，员工补差需考虑公司发放工资",
+    "input": {
+      "city": "成都",
+      "employeeBasicSalary": 18500,
+      "companyAvgSalary": 24500,
+      "socialInsuranceLimit": 32000,
+      "startDate": "2025-03-01",
+      "isDifficultBirth": true,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "paymentMethod": "企业账户",
+      "paidWageDuringLeave": 5000,
+      "deductions": [
+        { "note": "个税预扣", "amount": 800 }
+      ]
+    },
+    "expected": {
+      "totalMaternityDays": 158,
+      "governmentProcess": "* 12 / 365",
+      "employeeProcess": "* 12 / 365",
+      "deductionSummary": "个税预扣 ¥800.00"
+    }
+  },
+  "tianjin": {
+    "description": "天津 - 政府津贴按 30.4 折算",
+    "input": {
+      "city": "天津",
+      "employeeBasicSalary": 21000,
+      "companyAvgSalary": 26000,
+      "socialInsuranceLimit": 33000,
+      "startDate": "2025-04-10",
+      "isDifficultBirth": false,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "paymentMethod": "个人账户",
+      "deductions": []
+    },
+    "expected": {
+      "governmentProcess": " / 30.4 *",
+      "employeeReceivableGreaterThanGovernment": true
+    }
+  },
+  "guangzhou": {
+    "description": "广州 - 补充难产假 30 天",
+    "input": {
+      "city": "广州",
+      "employeeBasicSalary": 18000,
+      "companyAvgSalary": 22000,
+      "socialInsuranceLimit": 30000,
+      "startDate": "2025-05-15",
+      "isDifficultBirth": true,
+      "meetsSupplementalDifficultBirth": true,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "paymentMethod": "企业账户",
+      "deductions": []
+    },
+    "expected": {
+      "extraDaysFromSupplement": 30,
+      "appliedRulesContains": "难产假（剖腹产、会阴Ⅲ度破裂)"
+    }
+  },
+  "shaoxing": {
+    "description": "绍兴 - 二孩奖励假 90 天",
+    "input": {
+      "city": "绍兴",
+      "employeeBasicSalary": 16500,
+      "companyAvgSalary": 21500,
+      "socialInsuranceLimit": 28000,
+      "startDate": "2025-06-20",
+      "isSecondThirdChild": true,
+      "numberOfBabies": 1,
+      "pregnancyPeriod": "7个月以上",
+      "paymentMethod": "企业账户",
+      "deductions": []
+    },
+    "expected": {
+      "appliedRulesContains": "晚育假/生育假/奖励假-二孩、三孩",
+      "totalMaternityDays": 188
+    }
+  }
+}

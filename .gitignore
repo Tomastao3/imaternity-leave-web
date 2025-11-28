@@ -1,5 +1,26 @@
-# Default ignored files
-/shelf/
-/node_modules/
-/.idea/workspace.xml
-/.idea
+# Test results
+test-results/
+playwright-report/
+
+# Logs
+debug-output.log
+test-output.log
+*.log
+
+# Node modules
+node_modules/
+
+# Build
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

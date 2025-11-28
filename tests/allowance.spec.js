@@ -40,6 +40,6 @@ test.describe('产假津贴计算 - 基础流程', () => {
 
     // 断言出现结果区块
     await expect(page.getByRole('heading', { name: '计算结果' })).toBeVisible();
-    await expect(page.getByText('享受生育津贴天数：')).toBeVisible();
+    await expect(page.getByText('享受产假天数：')).toBeVisible();
   });
 });
